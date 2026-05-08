@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@import "@fontsource/instrument-sans";
+@import "@fontsource/jersey-10-charted";
+
+@theme {
+  --color-surface-900: oklch(10% 0.008 30);
+  --color-surface-800: oklch(14% 0.012 30);
+  --color-surface-700: oklch(18% 0.015 30);
+  --color-surface-glass: oklch(25% 0.02 30 / 0.45);
+  --color-surface-glass-strong: oklch(25% 0.02 30 / 0.55);
+  --color-surface-warm: oklch(18% 0.02 30);
+
+  --color-accent: oklch(68% 0.13 75);
+  --color-accent-hover: oklch(72% 0.15 75);
+  --color-accent-dim: oklch(55% 0.1 75);
+  --color-accent-glow: oklch(68% 0.13 75 / 0.25);
+  --color-accent-subtle: oklch(68% 0.13 75 / 0.08);
+
+  --color-text-primary: oklch(92% 0.005 30);
+  --color-text-dim: oklch(62% 0.01 30);
+  --color-text-softer: oklch(45% 0.01 30);
+
+  --color-success: oklch(62% 0.1 150);
+  --color-error: oklch(55% 0.15 25);
+
+  --color-border-glass: oklch(70% 0.02 30 / 0.1);
+
+  --font-family-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-family-brand: "Jersey 10 Charted", "Instrument Sans", sans-serif;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--color-surface-900);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-softer);
+  border-radius: 2px;
+}
