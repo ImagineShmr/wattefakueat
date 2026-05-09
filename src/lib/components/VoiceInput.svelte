@@ -1,7 +1,7 @@
 <script lang="ts">
   import GlowingOrb from './GlowingOrb.svelte';
   import { parseFoodText, guessMealType } from '$lib/nlp/parser';
-  import { speak } from '$lib/voice/tts';
+  import { speakConfirmation, speakUnclear, speakEmpty, cancel as cancelTTS } from '$lib/voice/tts';
   import { startSTT, stopSTT, isSTTSupported } from '$lib/voice/stt';
   import { createEntry } from '$lib/db/queries';
   import { MEAL_EMOJI, type MealType } from '$lib/types';
@@ -74,7 +74,8 @@
     state = 'processing';
     const t = text.trim();
     if (!t) {
-      state = 'result';
+      speakEmpty();
+      state = 'listening';
       return;
     }
     transcript = t;
@@ -82,6 +83,9 @@
     parsedMeal = parsed.mealType || guessMealType();
     parsedFoods = parsed.foods;
     state = 'result';
+    if (parsedFoods.length === 0) {
+      speakUnclear();
+    }
   }
 
   async function confirmEntry() {
@@ -90,7 +94,7 @@
     try {
       const now = new Date().toISOString();
       await createEntry(now, transcript, parsedFoods, parsedMeal);
-      speak(parsedFoods.slice(0, 2).join(' and ') + ', ' + parsedMeal);
+      speakConfirmation(parsedFoods, parsedMeal);
       onSaved();
       reset();
     } catch {
@@ -118,6 +122,7 @@
   }
 
   function reset() {
+    cancelTTS();
     stopSTT();
     state = 'listening';
     transcript = '';
@@ -144,7 +149,7 @@
   $effect(() => {
     if (state === 'listening') {
       startListening();
-      return () => stopSTT();
+      return () => { cancelTTS(); stopSTT(); };
     }
   });
 </script>

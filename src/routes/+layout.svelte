@@ -3,16 +3,59 @@
   import BottomNav from '$lib/components/BottomNav.svelte';
   import VoiceInput from '$lib/components/VoiceInput.svelte';
   import { showVoiceInput, refreshTrigger } from '$lib/stores';
+  import { onMount } from 'svelte';
 
   let { children }: { children: () => any } = $props();
 
   let voiceOpen = $state(false);
-  showVoiceInput.subscribe(v => voiceOpen = v);
+  let installEvent: any = $state(null);
+  let installDismissed = $state(false);
+
+  showVoiceInput.subscribe(v => {
+    if (v && !voiceOpen) {
+      voiceOpen = true;
+      history.pushState({ voice: true }, '');
+    } else if (!v) {
+      voiceOpen = false;
+    }
+  });
 
   function onSaved() {
     refreshTrigger.update(n => n + 1);
     showVoiceInput.set(false);
+    if (history.state?.voice) history.back();
   }
+
+  function handlePopState(e: PopStateEvent) {
+    if (voiceOpen) {
+      showVoiceInput.set(false);
+    }
+  }
+
+  async function handleInstall() {
+    if (!installEvent) return;
+    installEvent.prompt();
+    const result = await installEvent.userChoice;
+    installEvent = null;
+    installDismissed = true;
+  }
+
+  function dismissInstall() {
+    installDismissed = true;
+  }
+
+  onMount(() => {
+    window.addEventListener('popstate', handlePopState);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      installEvent = e;
+    });
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  });
 </script>
 
 <svelte:head>
@@ -45,6 +88,16 @@
         <line x1="9" y1="22" x2="15" y2="22"/>
       </svg>
     </button>
+  {/if}
+
+  {#if installEvent && !installDismissed}
+    <div class="install-banner">
+      <span class="install-text">Install app for quick access</span>
+      <div class="install-actions">
+        <button onclick={dismissInstall} class="install-dismiss" aria-label="Dismiss">Not now</button>
+        <button onclick={handleInstall} class="install-accept">Install</button>
+      </div>
+    </div>
   {/if}
 
   <BottomNav />
@@ -116,5 +169,69 @@
   .fab:active {
     transform: translateX(-50%) scale(0.92);
     box-shadow: 0 2px 12px var(--color-accent-glow);
+  }
+
+  .install-banner {
+    position: fixed;
+    bottom: calc(120px + max(16px, env(safe-area-inset-bottom, 16px)));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--color-surface-glass-strong);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-border-glass);
+    border-radius: 12px;
+    z-index: 95;
+    box-shadow: 0 4px 24px oklch(0% 0 0 / 0.3);
+    animation: slideUp 0.2s ease-out;
+    white-space: nowrap;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  .install-text {
+    font-size: 0.78rem;
+    color: var(--color-text-primary);
+    font-weight: 450;
+  }
+
+  .install-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .install-dismiss {
+    font-size: 0.75rem;
+    color: var(--color-text-dim);
+    font-family: inherit;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.12s;
+  }
+
+  .install-dismiss:hover {
+    background: oklch(70% 0.02 30 / 0.08);
+  }
+
+  .install-accept {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-surface-900);
+    font-family: inherit;
+    background: var(--color-accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: opacity 0.12s;
+  }
+
+  .install-accept:hover {
+    opacity: 0.9;
   }
 </style>
