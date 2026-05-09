@@ -14,7 +14,8 @@
     searchQuery
       ? entries.filter(e =>
           e.rawText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          e.foods.some(f => f.includes(searchQuery.toLowerCase()))
+          e.foods.some(f => f.includes(searchQuery.toLowerCase())) ||
+          (e.mealType && e.mealType.includes(searchQuery.toLowerCase()))
         )
       : entries
   );

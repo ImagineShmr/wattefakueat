@@ -88,8 +88,8 @@ export async function searchEntries(query: string): Promise<FoodEntry[]> {
   const q = `%${query}%`;
   const result = db.exec(
     `SELECT id, timestamp, meal_type, raw_text, foods, notes, created_at
-     FROM entries WHERE raw_text LIKE ? OR foods LIKE ? ORDER BY timestamp DESC`,
-    [q, q]
+     FROM entries WHERE raw_text LIKE ? OR foods LIKE ? OR meal_type LIKE ? ORDER BY timestamp DESC`,
+    [q, q, q]
   );
   if (result.length === 0) return [];
   return result[0].values.map(row => ({
